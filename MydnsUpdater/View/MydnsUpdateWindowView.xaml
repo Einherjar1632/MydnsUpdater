@@ -1,0 +1,25 @@
+﻿<Window x:Class="MydnsUpdater.View.MydnsUpdateWindowView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MydnsUpdater.View"
+        xmlns:vm="clr-namespace:MydnsUpdater.ViewModel"
+        mc:Ignorable="d"
+        Title="MydnsUpdateWindowView" Height="300" Width="300">
+    <Window.DataContext>
+        <vm:MydnsUpdateWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Button x:Name="button" 
+                Content="DnsUpdate" 
+                HorizontalAlignment="Left" 
+                Margin="20,102,0,0" 
+                VerticalAlignment="Top" 
+                Width="75"
+                Command="{Binding DnsUpdateCommand}"/>
+        <TextBox x:Name="MasterId" HorizontalAlignment="Left" Height="23" Margin="20,20,0,0" TextWrapping="Wrap" Text="{Binding MasterId.Value}" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="Password" HorizontalAlignment="Left" Height="23" Margin="20,50,0,0" TextWrapping="Wrap" Text="{Binding Password.Value}" VerticalAlignment="Top" Width="120"/>
+
+    </Grid>
+</Window>
