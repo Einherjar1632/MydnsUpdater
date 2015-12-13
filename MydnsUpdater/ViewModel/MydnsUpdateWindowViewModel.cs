@@ -13,10 +13,10 @@ namespace MydnsUpdater.ViewModel
 {
     class MydnsUpdateWindowViewModel
     {
+        #region ReactiveProperty
         /// <summary>
         /// MydnsのマスターID
         /// </summary>
-        [Required(ErrorMessage = "必須入力です")]
         public ReactiveProperty<string> MasterId { get; private set; }
 
         /// <summary>
@@ -28,9 +28,11 @@ namespace MydnsUpdater.ViewModel
         /// Mydnsへの更新間隔
         /// </summary>
         [Required(ErrorMessage = "必須入力です")]
-        [RegularExpression(@"[0-9]+", ErrorMessage = "半角数字のみ入力できます。")]
+        [RegularExpression(@"[0-9]+", ErrorMessage = "半角数字のみ入力できます")]
         public ReactiveProperty<string> UpdateSpan { get; private set; }
+        #endregion
 
+        #region ReactiveCommand
         /// <summary>
         /// DNS更新のコマンド
         /// </summary>
@@ -45,77 +47,117 @@ namespace MydnsUpdater.ViewModel
         /// DNSの一定間隔更新をキャンセルするコマンド
         /// </summary>
         public ReactiveCommand DnsCancelIntervalCommand { get; private set; }
+        #endregion
 
-        public IObservable<bool> IsProcessing { get; private set; }
+        #region AthorMember
+        /// <summary>
+        /// コマンド実行中かどうかを判定するIObservableなカウンター
+        ///   カウンターが0より大きければ実行中
+        ///   カウンターが0であれば停止中
+        /// </summary>
+        private CountNotifier countNotifer = new CountNotifier(1);
 
+        /// <summary>
+        /// 更新系コマンドが実行中であることを表すプロパティ
+        /// </summary>
+        private IObservable<bool> IsExecuting { get; set; }
+        #endregion
+
+        #region constructor
         /// <summary>
         /// コンストラクタ
         /// </summary>
         public MydnsUpdateWindowViewModel()
         {
-            // 書くテキストボックスのバリデーションを有効化
-            // MasterIdとUpdateSpanはRequiredAttribute検証の有効化。
-            // Passwordは独自のバリデーションを設定。
+            InitializeValidation();
+            InitializeCommand();
+
+            // 購読開始(未作成)
+            this.DnsUpdateCommand.Subscribe(_ =>
+            {
+                UpdateMydnsServer();
+            });
+            this.DnsIntervalUpdateCommand.Subscribe(_ => 
+            {
+                UpdateMydnsServer();
+            });
+            this.DnsCancelIntervalCommand.Subscribe(_ =>
+            {
+                UpdateMydnsServer();
+            });
+        }
+        #endregion
+
+        #region PrivateMethod
+        /// <summary>
+        /// バインドされているコマンドのバリデーション設定
+        /// </summary>
+        private void InitializeValidation()
+        {
+            // 各テキストボックスのバリデーションを有効化
+            // MasterIdとPasswordは独自のバリデーションを設定
             this.MasterId = new ReactiveProperty<string>()
-                .SetValidateAttribute(() => this.MasterId);
+                .SetValidateNotifyError(x => string.IsNullOrEmpty(x) ? "必須入力です" : null);
             this.Password = new ReactiveProperty<string>()
                 .SetValidateNotifyError(x => string.IsNullOrEmpty(x) ? "必須入力です" : null);
+            // UpdateSpanはRequiredAttribute検証の有効化
             this.UpdateSpan = new ReactiveProperty<string>()
                 .SetValidateAttribute(() => this.UpdateSpan);
+        }
 
-            // ReactiveCommandの生成
+        /// <summary>
+        /// 各コマンドの生成
+        /// </summary>
+        private void InitializeCommand()
+        {
             // 更新コマンドはMasterIdとPasswordが正しく入力がされている場合に限りCommandを受け付ける
             this.DnsUpdateCommand = new[]{
-                this.MasterId.ObserveHasErrors,
-                this.Password.ObserveHasErrors,
+                this.MasterId.ObserveHasErrors
+                , this.Password.ObserveHasErrors
             }
-            .CombineLatestValuesAreAllFalse()
+            .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
+
+            // カウンターをIObservable<bool>に変換
+            this.IsExecuting = this.countNotifer
+                .Select(x => x != CountChangedStatus.Empty) // カウンターが0の時に実行中だと判定する
+                .ToReactiveProperty();
 
             // インターバルコマンドは全てのテキストボックスが正しく入力がされている
             // かつインターバル実行中でなければCommandを受け付ける
             this.DnsIntervalUpdateCommand = new[]
             {
-                this.MasterId.ObserveHasErrors,
-                this.Password.ObserveHasErrors,
-                this.UpdateSpan.ObserveHasErrors
+                this.MasterId.ObserveHasErrors
+                , this.Password.ObserveHasErrors
+                , this.UpdateSpan.ObserveHasErrors
+                , this.IsExecuting
             }
-            .CombineLatestValuesAreAllFalse()
+            .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
 
-            // キャンセルコマンドは一定間隔更新コマンドが動いている時のみCommandを受け付ける
+
+            // 更新コマンドが実行可能かどうかを判断するIObservable<bool>を生成
+            //  特に必要なIObservableではないが後学のために用意
+            var canDnsUpdateCommand = this.DnsUpdateCommand
+                .CanExecuteChangedAsObservable()　// ICommandに実装されているCanExecuteChangedをIObservable<EventArgs>に変換して
+                .Select(_ => this.DnsUpdateCommand.CanExecute()); // IObservable<bool>に変換
+
+            // キャンセルコマンドは更新系コマンド実行中
+            // かつ更新コマンドが実行可能な時のみCommandを受け付ける
             this.DnsCancelIntervalCommand = new[]
             {
-                this.IsProcessing
+                IsExecuting
+                , canDnsUpdateCommand
             }
             .CombineLatestValuesAreAllTrue()
             .ToReactiveCommand();
-
-
-            // 購読開始
-            this.DnsUpdateCommand.Subscribe(_ =>
-            {
-                UpdateMydnsServer();
-            });
-
-            // TODO:テスト
-            InitializeTestMethod();
-
         }
+        #endregion
 
         private void UpdateMydnsServer()
         {
+            countNotifer.Increment();
             Console.WriteLine("この辺りにそれっぽいメインロジック作る");
-        }
-
-        // TODO:テスト
-        private void InitializeTestMethod()
-        {
-            var source = Observable.Timer(TimeSpan.FromSeconds(5),TimeSpan.FromSeconds(1));
-            source.Subscribe(_ =>
-            {
-                UpdateMydnsServer();
-            });
         }
 
     }
