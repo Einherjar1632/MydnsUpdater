@@ -77,14 +77,25 @@ namespace MydnsUpdater.ViewModel
             {
                 UpdateMydnsServer();
             });
-            this.DnsIntervalUpdateCommand.Subscribe(_ => 
+            this.DnsIntervalUpdateCommand.Subscribe(_ =>
             {
-                UpdateMydnsServer();
+                IntervalUpdateMydnsServerAsync();
             });
             this.DnsCancelIntervalCommand.Subscribe(_ =>
             {
-                UpdateMydnsServer();
+                CancelIntervalAsync();
             });
+
+            //this.DnsIntervalUpdateCommand.Subscribe(
+            //    onNext: _ =>
+            //    {
+            //        UpdateMydnsServer();
+            //    },
+            //    onCompleted: _ =>
+            //    {
+            //        Console.WriteLine("Compleate");
+            //    });
+
         }
         #endregion
 
@@ -154,10 +165,32 @@ namespace MydnsUpdater.ViewModel
         }
         #endregion
 
-        private void UpdateMydnsServer()
+
+        private async Task IntervalUpdateMydnsServerAsync()
         {
-            countNotifer.Increment();
-            Console.WriteLine("この辺りにそれっぽいメインロジック作る");
+            using (countNotifer.Increment())
+            {
+                await Task.Delay(1000 * 5);
+                Console.WriteLine("重たい処理が終わったよ");
+            }
+
+        }
+
+        private void CancelIntervalAsync()
+        {
+             countNotifer.Decrement();
+        }
+
+
+
+        private async void UpdateMydnsServer()
+        {
+            using (countNotifer.Increment())
+            {
+                await Task.Delay(5000);
+                Console.WriteLine("この辺りにそれっぽいメインロジック作る");
+            }
+            //countNotifer.Increment();
         }
 
     }
