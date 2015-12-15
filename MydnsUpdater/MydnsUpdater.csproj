@@ -85,6 +85,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\DnsHttpHttpAccess.cs" />
     <Compile Include="ViewModel\MydnsUpdateWindowViewModel.cs" />
     <Compile Include="View\MydnsUpdateWindowView.xaml.cs">
       <DependentUpon>MydnsUpdateWindowView.xaml</DependentUpon>

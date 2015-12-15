@@ -8,6 +8,7 @@ using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
 using System.ComponentModel.DataAnnotations;
 using System.Reactive.Linq;
+using MydnsUpdater.Model;
 
 namespace MydnsUpdater.ViewModel
 {
@@ -77,9 +78,9 @@ namespace MydnsUpdater.ViewModel
             {
                 UpdateMydnsServer();
             });
-            this.DnsIntervalUpdateCommand.Subscribe(_ =>
+            this.DnsIntervalUpdateCommand.Subscribe(async _ =>
             {
-                IntervalUpdateMydnsServerAsync();
+                await IntervalUpdateMydnsServerAsync();
             });
             this.DnsCancelIntervalCommand.Subscribe(_ =>
             {
@@ -170,7 +171,8 @@ namespace MydnsUpdater.ViewModel
         {
             using (countNotifer.Increment())
             {
-                await Task.Delay(1000 * 5);
+                var dnsUpdate = new DnsHttpAccess(MasterId.Value,Password.Value);
+                await dnsUpdate.UpdateDnsServerAsync();
                 Console.WriteLine("重たい処理が終わったよ");
             }
 
