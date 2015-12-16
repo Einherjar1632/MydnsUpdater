@@ -30,9 +30,9 @@ namespace MydnsUpdater.Model
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var ipAddress = JsonConvert.DeserializeObject<NetworkInfomation>(json);
-
-                    using (var responses = await httpClient.GetAsync(string.Format(_myDnsUri, _masterId, _password, ipAddress.Ip)))
+                    var networkInfomation = JsonConvert.DeserializeObject<NetworkInfomation>(json);
+                    var uri = string.Format(_myDnsUri, _masterId, _password, networkInfomation.Ip);
+                    using (var responses = await httpClient.GetAsync(uri))
                     {
                         if (responses.IsSuccessStatusCode)
                         {
