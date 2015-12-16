@@ -86,17 +86,6 @@ namespace MydnsUpdater.ViewModel
             {
                 CancelIntervalAsync();
             });
-
-            //this.DnsIntervalUpdateCommand.Subscribe(
-            //    onNext: _ =>
-            //    {
-            //        UpdateMydnsServer();
-            //    },
-            //    onCompleted: _ =>
-            //    {
-            //        Console.WriteLine("Compleate");
-            //    });
-
         }
         #endregion
 

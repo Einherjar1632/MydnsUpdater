@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MydnsUpdater.View"
         xmlns:vm="clr-namespace:MydnsUpdater.ViewModel"
         mc:Ignorable="d"
-        Title="MydnsUpdateWindowView" Height="300" Width="300">
+        Title="MydnsUpdateWindowView" Height="200" Width="300">
     <Window.DataContext>
         <vm:MydnsUpdateWindowViewModel />
     </Window.DataContext>
