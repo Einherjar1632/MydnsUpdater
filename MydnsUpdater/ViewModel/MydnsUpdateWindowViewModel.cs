@@ -160,7 +160,7 @@ namespace MydnsUpdater.ViewModel
         {
             using (countNotifer.Increment())
             {
-                var dnsUpdate = new DnsHttpAccess(MasterId.Value,Password.Value);
+                var dnsUpdate = new MyDnsDnsHttpAccess(MasterId.Value,Password.Value);
                 await dnsUpdate.UpdateDnsServerAsync();
                 Console.WriteLine("重たい処理が終わったよ");
             }
