@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Reactive.Bindings;
 
 namespace MydnsUpdater.Model
 {
@@ -15,6 +16,8 @@ namespace MydnsUpdater.Model
         private static readonly string _myDnsUri = " http://www.mydns.jp/directip.html?MID={0}&PWD={1}&IPV4ADDR={2}";
         private string _masterId = string.Empty;
         private string _password = string.Empty;
+
+        public ReactiveCollection<DynamicDNSResponse> ItemsCollection { get; } = new ReactiveCollection<DynamicDNSResponse>();
 
         public MyDnsDnsHttpAccess(string masterId, string password)
         {
@@ -36,7 +39,22 @@ namespace MydnsUpdater.Model
                     {
                         if (responses.IsSuccessStatusCode)
                         {
-                            Console.WriteLine("OK!!");
+                            var jsons = await responses.Content.ReadAsStringAsync();
+                            var item = new DynamicDNSResponse()
+                            {
+                                Status = "更新成功",
+                                Time = DateTime.Now.ToString()
+                            };
+                            ItemsCollection.Add(item);
+                        }
+                        else
+                        {
+                            var item = new DynamicDNSResponse()
+                            {
+                                Status = "更新失敗",
+                                Time = DateTime.Now.ToString()
+                            };
+                            ItemsCollection.Add(item);
                         }
                     }
                 }

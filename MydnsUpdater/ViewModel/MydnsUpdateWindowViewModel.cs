@@ -50,6 +50,13 @@ namespace MydnsUpdater.ViewModel
         public ReactiveCommand DnsCancelIntervalCommand { get; private set; }
         #endregion
 
+        #region ReadOnlyReactiveCollection
+        /// <summary>
+        /// DynamicDNSへの更新結果履歴を保持する読み取り専用コレクション
+        /// </summary>
+        public ReadOnlyReactiveCollection<DynamicDNSResponseViewModel> ItemsList { get; private set; }
+        #endregion
+
         #region AthorMember
         /// <summary>
         /// コマンド実行中かどうかを判定するIObservableなカウンター
@@ -62,6 +69,8 @@ namespace MydnsUpdater.ViewModel
         /// 更新系コマンドが実行中であることを表すプロパティ
         /// </summary>
         private IObservable<bool> IsExecuting { get; set; }
+
+        private MyDnsDnsHttpAccess Model { get; set; }
         #endregion
 
         #region constructor
@@ -160,9 +169,12 @@ namespace MydnsUpdater.ViewModel
         {
             using (countNotifer.Increment())
             {
-                var dnsUpdate = new MyDnsDnsHttpAccess(MasterId.Value,Password.Value);
-                await dnsUpdate.UpdateDnsServerAsync();
-                Console.WriteLine("重たい処理が終わったよ");
+                Model = new MyDnsDnsHttpAccess(MasterId.Value, Password.Value);
+                await Model.UpdateDnsServerAsync();
+                this.ItemsList = this.Model.ItemsCollection
+                    .ToReadOnlyReactiveCollection(x => new DynamicDNSResponseViewModel(x));
+                Console.Write("あ");
+
             }
 
         }
