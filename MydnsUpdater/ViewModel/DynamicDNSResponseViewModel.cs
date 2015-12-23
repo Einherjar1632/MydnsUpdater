@@ -14,23 +14,23 @@ namespace MydnsUpdater.ViewModel
         public ReactiveProperty<string> Status { get; set; }
         public ReactiveProperty<string> Time { get; set; }
 
-        public DynamicDNSResponse Model { get; }
+        private DynamicDNSResponse Model { get; }
 
-        public DynamicDNSResponseViewModel(DynamicDNSResponse Model)
+        public DynamicDNSResponseViewModel(DynamicDNSResponse model)
         {
-            this.Model = Model;
+            this.Model = model;
+
 
             this.Status = this.Model
-                .ObserveProperty(x => x.Status)
-                .ToReactiveProperty();
+                //双方向
+                .ToReactivePropertyAsSynchronized(x => x.Status);
+                //.ObserveProperty(x => x.Status)
+                //.ToReactiveProperty();
 
             this.Time = this.Model
+                //出力のみ
                 .ObserveProperty(x => x.Time)
                 .ToReactiveProperty();
-
-            //this.Status = new ReactiveProperty<string>(Model.Status);
-            //this.Time = new ReactiveProperty<string>(Model.Time);
-            
         }
 
     }

@@ -8,6 +8,7 @@ using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
 using System.ComponentModel.DataAnnotations;
 using System.Reactive.Linq;
+using System.Collections.ObjectModel;
 using MydnsUpdater.Model;
 
 namespace MydnsUpdater.ViewModel
@@ -55,7 +56,6 @@ namespace MydnsUpdater.ViewModel
         /// DynamicDNSへの更新結果履歴を保持する読み取り専用コレクション
         /// </summary>
         public ReadOnlyReactiveCollection<DynamicDNSResponseViewModel> ItemsList { get; set; }
-        //public System.Collections.ObjectModel.ObservableCollection<DynamicDNSResponse> ItemsList { get; private set; }
         #endregion
 
         #region AthorMember
@@ -71,7 +71,7 @@ namespace MydnsUpdater.ViewModel
         /// </summary>
         private IObservable<bool> IsExecuting { get; set; }
 
-        private MyDnsDnsHttpAccess Model { get; set; }
+        private MyDnsDnsHttpAccess Model { get; }
         #endregion
 
         #region constructor
@@ -84,6 +84,9 @@ namespace MydnsUpdater.ViewModel
             InitializeCommand();
 
             Model = new MyDnsDnsHttpAccess(MasterId, Password);
+
+            this.ItemsList = this.Model.ItemsCollection
+                .ToReadOnlyReactiveCollection(x => new DynamicDNSResponseViewModel(x));
 
             // 購読開始(未作成)
             this.DnsUpdateCommand.Subscribe(_ =>
@@ -172,11 +175,7 @@ namespace MydnsUpdater.ViewModel
         {
             using (countNotifer.Increment())
             {
-                this.ItemsList = this.Model.ItemsCollection
-                    .ToReadOnlyReactiveCollection(x => new DynamicDNSResponseViewModel(x));
                 await Model.UpdateDnsServerAsync();
-                Console.Write("");
-
             }
 
         }
@@ -195,7 +194,6 @@ namespace MydnsUpdater.ViewModel
                 await Task.Delay(5000);
                 Console.WriteLine("");
             }
-            //countNotifer.Increment();
         }
 
     }

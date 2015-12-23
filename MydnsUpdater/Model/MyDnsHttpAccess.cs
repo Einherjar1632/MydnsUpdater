@@ -42,21 +42,11 @@ namespace MydnsUpdater.Model
                         if (responses.IsSuccessStatusCode)
                         {
                             var jsons = await responses.Content.ReadAsStringAsync();
-                            var item = new DynamicDNSResponse()
-                            {
-                                Status = "更新成功",
-                                Time = DateTime.Now.ToString()
-                            };
-                            ItemsCollection.Add(item);
+                            ItemsCollection.Add(new DynamicDNSResponse { Status = "更新成功", Time = DateTime.Now.ToString() });
                         }
                         else
                         {
-                            var item = new DynamicDNSResponse()
-                            {
-                                Status = "更新失敗",
-                                Time = DateTime.Now.ToString()
-                            };
-                            ItemsCollection.Add(item);
+                            ItemsCollection.Add(new DynamicDNSResponse { Status = "更新失敗", Time = DateTime.Now.ToString() });
                         }
                     }
                 }
