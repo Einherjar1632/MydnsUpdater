@@ -7,6 +7,8 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Reactive.Bindings;
+using System.Collections.ObjectModel;
+using Microsoft.Practices.Prism.Mvvm;
 
 namespace MydnsUpdater.Model
 {
@@ -14,12 +16,12 @@ namespace MydnsUpdater.Model
     {
         private static readonly string _jsonIpUri = "http://jsonip.com/";
         private static readonly string _myDnsUri = " http://www.mydns.jp/directip.html?MID={0}&PWD={1}&IPV4ADDR={2}";
-        private string _masterId = string.Empty;
-        private string _password = string.Empty;
+        private ReactiveProperty<string> _masterId = null;
+        private ReactiveProperty<string> _password = null;
 
-        public ReactiveCollection<DynamicDNSResponse> ItemsCollection { get; } = new ReactiveCollection<DynamicDNSResponse>();
+        public ObservableCollection<DynamicDNSResponse> ItemsCollection { get; } = new ObservableCollection<DynamicDNSResponse>();
 
-        public MyDnsDnsHttpAccess(string masterId, string password)
+        public MyDnsDnsHttpAccess(ReactiveProperty<string> masterId, ReactiveProperty<string> password)
         {
             _masterId = masterId;
             _password = password;
@@ -34,7 +36,7 @@ namespace MydnsUpdater.Model
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var networkInfomation = JsonConvert.DeserializeObject<NetworkInfomation>(json);
-                    var uri = string.Format(_myDnsUri, _masterId, _password, networkInfomation.Ip);
+                    var uri = string.Format(_myDnsUri, _masterId.Value, _password.Value, networkInfomation.Ip);
                     using (var responses = await httpClient.GetAsync(uri))
                     {
                         if (responses.IsSuccessStatusCode)

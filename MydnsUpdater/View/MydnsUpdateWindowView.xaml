@@ -58,14 +58,52 @@
         	Margin="200,120,0,0" 
         	VerticalAlignment="Top" 
         	Width="75"
-        	Command="{Binding DnsCancelIntervalCommand, UpdateSourceTrigger=PropertyChanged}"/>
-        <ListView x:Name="UpdateProfitListView" HorizontalAlignment="Left" Height="100" Margin="20,155,0,0" VerticalAlignment="Top" Width="250">
+        	Command="{Binding DnsCancelIntervalCommand, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}"/>
+        <!--<ListBox x:Name="listBox" HorizontalAlignment="Left" Height="100" Margin="33,160,0,0" VerticalAlignment="Top" Width="100" ItemsSource="{Binding ItemsList, UpdateSourceTrigger=PropertyChanged}"/>-->
+
+        <!--<ListView x:Name="UpdateProfitListView" 
+                  HorizontalAlignment="Left" 
+                  Height="100"
+                  Margin="20,155,0,0" 
+                  VerticalAlignment="Top" 
+                  Width="250" 
+                  ItemsSource="{Binding ItemsList}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn/>
+                    <GridViewColumn Header="Status">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=Status.Value, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Time">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=Time.Value}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>-->
+
+        <ListView x:Name="UpdateProfitListView" 
+                  HorizontalAlignment="Left" 
+                  Height="100"
+                  Margin="20,155,0,0" 
+                  VerticalAlignment="Top" 
+                  Width="250" 
+                  ItemsSource="{Binding ItemsList, Mode=TwoWay}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Status.Value}" Width="50"/>
+                    <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Time.Value}" Width="100"/>
                 </GridView>
             </ListView.View>
         </ListView>
+
+
 
     </Grid>
 </Window>
