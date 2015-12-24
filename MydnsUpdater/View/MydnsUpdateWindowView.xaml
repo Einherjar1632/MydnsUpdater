@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MydnsUpdater.View"
         xmlns:vm="clr-namespace:MydnsUpdater.ViewModel"
         mc:Ignorable="d"
         Title="MydnsUpdateWindowView" Height="300" Width="300">
@@ -11,7 +10,7 @@
         <vm:MydnsUpdateWindowViewModel />
     </Window.DataContext>
     <Grid>
-        <Button x:Name="button" 
+        <Button x:Name="PeriodicButton" 
                 Content="DNS即時更新" 
                 HorizontalAlignment="Left" 
                 Margin="20,120,0,0" 
@@ -45,14 +44,14 @@
         <Label x:Name="MasterIdLabel" Content="MydnsマスターID" HorizontalAlignment="Left" Margin="20,19,0,0" VerticalAlignment="Top"/>
         <Label x:Name="PasswordLabel" Content="Mydnsパスワード" HorizontalAlignment="Left" Margin="20,49,0,0" VerticalAlignment="Top"/>
         <Label x:Name="UpdateSpanLabel" Content="Mydns更新間隔" HorizontalAlignment="Left" Margin="20,78,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.505,1.44"/>
-        <Button x:Name="button_Copy" 
+        <Button x:Name="ImmediatelyButton" 
         	Content="即時更新" 
         	HorizontalAlignment="Left" 
         	Margin="110,120,0,0" 
         	VerticalAlignment="Top" 
         	Width="75"
         	Command="{Binding DnsIntervalUpdateCommand, UpdateSourceTrigger=PropertyChanged}"/>
-        <Button x:Name="button_Copy1" 
+        <Button x:Name="CancelButton" 
         	Content="キャンセル" 
         	HorizontalAlignment="Left" 
         	Margin="200,120,0,0" 

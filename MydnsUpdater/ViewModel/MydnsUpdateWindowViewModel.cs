@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel.DataAnnotations;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using MydnsUpdater.Model;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
-using System.ComponentModel.DataAnnotations;
-using System.Reactive.Linq;
-using System.Collections.ObjectModel;
-using MydnsUpdater.Model;
 
 namespace MydnsUpdater.ViewModel
 {
@@ -29,8 +25,8 @@ namespace MydnsUpdater.ViewModel
         /// <summary>
         /// Mydnsへの更新間隔
         /// </summary>
-        [Required(ErrorMessage = "必須入力です")]
-        [RegularExpression(@"[0-9]+", ErrorMessage = "半角数字のみ入力できます")]
+        [Required(ErrorMessage = @"必須入力です")]
+        [RegularExpression(@"[0-9]+", ErrorMessage = @"半角数字のみ入力できます")]
         public ReactiveProperty<string> UpdateSpan { get; private set; }
         #endregion
 
@@ -55,7 +51,7 @@ namespace MydnsUpdater.ViewModel
         /// <summary>
         /// DynamicDNSへの更新結果履歴を保持する読み取り専用コレクション
         /// </summary>
-        public ReadOnlyReactiveCollection<DynamicDNSResponseViewModel> ItemsList { get; set; }
+        public ReadOnlyReactiveCollection<DynamicDnsViewModel> ItemsList { get; set; }
         #endregion
 
         #region AthorMember
@@ -64,7 +60,7 @@ namespace MydnsUpdater.ViewModel
         ///   カウンターが0より大きければ実行中
         ///   カウンターが0であれば停止中
         /// </summary>
-        private CountNotifier countNotifer = new CountNotifier(1);
+        private readonly CountNotifier _countNotifer = new CountNotifier(1);
 
         /// <summary>
         /// 更新系コマンドが実行中であることを表すプロパティ
@@ -85,19 +81,19 @@ namespace MydnsUpdater.ViewModel
 
             Model = new MyDnsDnsHttpAccess(MasterId, Password);
 
-            this.ItemsList = this.Model.ItemsCollection
-                .ToReadOnlyReactiveCollection(x => new DynamicDNSResponseViewModel(x));
+            ItemsList = Model.ItemsCollection
+                .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
 
             // 購読開始(未作成)
-            this.DnsUpdateCommand.Subscribe(_ =>
+            DnsUpdateCommand.Subscribe(_ =>
             {
                 UpdateMydnsServer();
             });
-            this.DnsIntervalUpdateCommand.Subscribe(async _ =>
+            DnsIntervalUpdateCommand.Subscribe(async _ =>
             {
                 await IntervalUpdateMydnsServerAsync();
             });
-            this.DnsCancelIntervalCommand.Subscribe(_ =>
+            DnsCancelIntervalCommand.Subscribe(_ =>
             {
                 CancelIntervalAsync();
             });
@@ -112,13 +108,13 @@ namespace MydnsUpdater.ViewModel
         {
             // 各テキストボックスのバリデーションを有効化
             // MasterIdとPasswordは独自のバリデーションを設定
-            this.MasterId = new ReactiveProperty<string>()
+            MasterId = new ReactiveProperty<string>()
                 .SetValidateNotifyError(x => string.IsNullOrEmpty(x) ? "必須入力です" : null);
-            this.Password = new ReactiveProperty<string>()
+            Password = new ReactiveProperty<string>()
                 .SetValidateNotifyError(x => string.IsNullOrEmpty(x) ? "必須入力です" : null);
             // UpdateSpanはRequiredAttribute検証の有効化
-            this.UpdateSpan = new ReactiveProperty<string>()
-                .SetValidateAttribute(() => this.UpdateSpan);
+            UpdateSpan = new ReactiveProperty<string>()
+                .SetValidateAttribute(() => UpdateSpan);
         }
 
         /// <summary>
@@ -127,26 +123,26 @@ namespace MydnsUpdater.ViewModel
         private void InitializeCommand()
         {
             // 更新コマンドはMasterIdとPasswordが正しく入力がされている場合に限りCommandを受け付ける
-            this.DnsUpdateCommand = new[]{
-                this.MasterId.ObserveHasErrors
-                , this.Password.ObserveHasErrors
+            DnsUpdateCommand = new[]{
+                MasterId.ObserveHasErrors
+                , Password.ObserveHasErrors
             }
             .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
 
             // カウンターをIObservable<bool>に変換
-            this.IsExecuting = this.countNotifer
+            IsExecuting = _countNotifer
                 .Select(x => x != CountChangedStatus.Empty) // カウンターが0の時に実行中だと判定する
                 .ToReactiveProperty();
 
             // インターバルコマンドは全てのテキストボックスが正しく入力がされている
             // かつインターバル実行中でなければCommandを受け付ける
-            this.DnsIntervalUpdateCommand = new[]
+            DnsIntervalUpdateCommand = new[]
             {
-                this.MasterId.ObserveHasErrors
-                , this.Password.ObserveHasErrors
-                , this.UpdateSpan.ObserveHasErrors
-                , this.IsExecuting
+                MasterId.ObserveHasErrors
+                , Password.ObserveHasErrors
+                , UpdateSpan.ObserveHasErrors
+                , IsExecuting
             }
             .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
@@ -154,13 +150,13 @@ namespace MydnsUpdater.ViewModel
 
             // 更新コマンドが実行可能かどうかを判断するIObservable<bool>を生成
             //  特に必要なIObservableではないが後学のために用意
-            var canDnsUpdateCommand = this.DnsUpdateCommand
+            var canDnsUpdateCommand = DnsUpdateCommand
                 .CanExecuteChangedAsObservable()　// ICommandに実装されているCanExecuteChangedをIObservable<EventArgs>に変換して
-                .Select(_ => this.DnsUpdateCommand.CanExecute()); // IObservable<bool>に変換
+                .Select(_ => DnsUpdateCommand.CanExecute()); // IObservable<bool>に変換
 
             // キャンセルコマンドは更新系コマンド実行中
             // かつ更新コマンドが実行可能な時のみCommandを受け付ける
-            this.DnsCancelIntervalCommand = new[]
+            DnsCancelIntervalCommand = new[]
             {
                 IsExecuting
                 , canDnsUpdateCommand
@@ -173,7 +169,7 @@ namespace MydnsUpdater.ViewModel
 
         private async Task IntervalUpdateMydnsServerAsync()
         {
-            using (countNotifer.Increment())
+            using (_countNotifer.Increment())
             {
                 await Model.UpdateDnsServerAsync();
             }
@@ -182,14 +178,14 @@ namespace MydnsUpdater.ViewModel
 
         private void CancelIntervalAsync()
         {
-             countNotifer.Decrement();
+             _countNotifer.Decrement();
         }
 
 
 
         private async void UpdateMydnsServer()
         {
-            using (countNotifer.Increment())
+            using (_countNotifer.Increment())
             {
                 await Task.Delay(5000);
                 Console.WriteLine("");

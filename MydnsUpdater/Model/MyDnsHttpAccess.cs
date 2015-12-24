@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Reactive.Bindings;
 using System.Collections.ObjectModel;
-using Microsoft.Practices.Prism.Mvvm;
+using System.Globalization;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Reactive.Bindings;
 
 namespace MydnsUpdater.Model
 {
@@ -16,10 +12,10 @@ namespace MydnsUpdater.Model
     {
         private static readonly string _jsonIpUri = "http://jsonip.com/";
         private static readonly string _myDnsUri = " http://www.mydns.jp/directip.html?MID={0}&PWD={1}&IPV4ADDR={2}";
-        private ReactiveProperty<string> _masterId = null;
-        private ReactiveProperty<string> _password = null;
+        private readonly ReactiveProperty<string> _masterId;
+        private readonly ReactiveProperty<string> _password;
 
-        public ObservableCollection<DynamicDNSResponse> ItemsCollection { get; } = new ObservableCollection<DynamicDNSResponse>();
+        public ObservableCollection<DynamicDns> ItemsCollection { get; } = new ObservableCollection<DynamicDns>();
 
         public MyDnsDnsHttpAccess(ReactiveProperty<string> masterId, ReactiveProperty<string> password)
         {
@@ -41,12 +37,12 @@ namespace MydnsUpdater.Model
                     {
                         if (responses.IsSuccessStatusCode)
                         {
-                            var jsons = await responses.Content.ReadAsStringAsync();
-                            ItemsCollection.Add(new DynamicDNSResponse { Status = "更新成功", Time = DateTime.Now.ToString() });
+                            await responses.Content.ReadAsStringAsync();
+                            ItemsCollection.Add(new DynamicDns { Status = "更新成功", Time = DateTime.Now.ToString(CultureInfo.CurrentCulture) });
                         }
                         else
                         {
-                            ItemsCollection.Add(new DynamicDNSResponse { Status = "更新失敗", Time = DateTime.Now.ToString() });
+                            ItemsCollection.Add(new DynamicDns { Status = "更新失敗", Time = DateTime.Now.ToString(CultureInfo.CurrentCulture) });
                         }
                     }
                 }
