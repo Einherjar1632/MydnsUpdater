@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.Tracing;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MydnsUpdater.Model;
@@ -67,7 +69,19 @@ namespace MydnsUpdater.ViewModel
         /// </summary>
         private IObservable<bool> IsExecuting { get; set; }
 
-        private MyDnsDnsHttpAccess Model { get; }
+        /// <summary>
+        /// 実行タイマー
+        /// </summary>
+        private IObservable<long>  Timer { get; set; }
+
+        private IDisposable TimerCancel { get; set; }
+
+        private ReactiveProperty<bool> IsDnsIntervalUpdateExecuting { get; set; }  = new ReactiveProperty<bool>(false);
+
+        /// <summary>
+        /// Modelの情報を保持
+        /// </summary>
+        private MyDns Model { get; }
         #endregion
 
         #region constructor
@@ -79,7 +93,7 @@ namespace MydnsUpdater.ViewModel
             InitializeValidation();
             InitializeCommand();
 
-            Model = new MyDnsDnsHttpAccess(MasterId, Password);
+            Model = new MyDns(MasterId, Password);
 
             ItemsList = Model.ItemsCollection
                 .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
@@ -89,9 +103,9 @@ namespace MydnsUpdater.ViewModel
             {
                 UpdateMydnsServer();
             });
-            DnsIntervalUpdateCommand.Subscribe(async _ =>
+            DnsIntervalUpdateCommand.Subscribe( _ =>
             {
-                await IntervalUpdateMydnsServerAsync();
+                IntervalUpdateMydnsServerAsync();
             });
             DnsCancelIntervalCommand.Subscribe(_ =>
             {
@@ -122,18 +136,19 @@ namespace MydnsUpdater.ViewModel
         /// </summary>
         private void InitializeCommand()
         {
-            // 更新コマンドはMasterIdとPasswordが正しく入力がされている場合に限りCommandを受け付ける
-            DnsUpdateCommand = new[]{
-                MasterId.ObserveHasErrors
-                , Password.ObserveHasErrors
-            }
-            .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
-            .ToReactiveCommand();
-
             // カウンターをIObservable<bool>に変換
             IsExecuting = _countNotifer
                 .Select(x => x != CountChangedStatus.Empty) // カウンターが0の時に実行中だと判定する
                 .ToReactiveProperty();
+
+            // 更新コマンドはMasterIdとPasswordが正しく入力がされている場合に限りCommandを受け付ける
+            DnsUpdateCommand = new[]{
+                MasterId.ObserveHasErrors
+                , Password.ObserveHasErrors
+                , IsExecuting
+            }
+            .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
+            .ToReactiveCommand();
 
             // インターバルコマンドは全てのテキストボックスが正しく入力がされている
             // かつインターバル実行中でなければCommandを受け付ける
@@ -142,7 +157,7 @@ namespace MydnsUpdater.ViewModel
                 MasterId.ObserveHasErrors
                 , Password.ObserveHasErrors
                 , UpdateSpan.ObserveHasErrors
-                , IsExecuting
+                , IsDnsIntervalUpdateExecuting
             }
             .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
@@ -158,8 +173,7 @@ namespace MydnsUpdater.ViewModel
             // かつ更新コマンドが実行可能な時のみCommandを受け付ける
             DnsCancelIntervalCommand = new[]
             {
-                IsExecuting
-                , canDnsUpdateCommand
+                IsDnsIntervalUpdateExecuting
             }
             .CombineLatestValuesAreAllTrue()
             .ToReactiveCommand();
@@ -167,30 +181,40 @@ namespace MydnsUpdater.ViewModel
         #endregion
 
 
-        private async Task IntervalUpdateMydnsServerAsync()
+        private  void IntervalUpdateMydnsServerAsync()
+        {
+            Timer = Observable.Timer(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(long.Parse(UpdateSpan.Value)));
+            TimerCancel = Timer.Subscribe(async _ =>
+            {
+                IsDnsIntervalUpdateExecuting.Value = true;
+                using (_countNotifer.Increment())
+                {
+                    await Model.UpdateDnsServerAsync();
+                }
+
+            });
+        }
+
+        /// <summary>
+        /// キャンセルさせます
+        /// </summary>
+        private void CancelIntervalAsync()
+        {
+            IsDnsIntervalUpdateExecuting.Value = false;
+            TimerCancel.Dispose();
+            _countNotifer.Decrement();
+        }
+
+
+        /// <summary>
+        /// 即時実行します
+        /// </summary>
+        private async void UpdateMydnsServer()
         {
             using (_countNotifer.Increment())
             {
                 await Model.UpdateDnsServerAsync();
             }
-
         }
-
-        private void CancelIntervalAsync()
-        {
-             _countNotifer.Decrement();
-        }
-
-
-
-        private async void UpdateMydnsServer()
-        {
-            using (_countNotifer.Increment())
-            {
-                await Task.Delay(5000);
-                Console.WriteLine("");
-            }
-        }
-
     }
 }

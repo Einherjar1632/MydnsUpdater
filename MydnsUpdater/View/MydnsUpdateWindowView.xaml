@@ -10,13 +10,6 @@
         <vm:MydnsUpdateWindowViewModel />
     </Window.DataContext>
     <Grid>
-        <Button x:Name="PeriodicButton" 
-                Content="DNS即時更新" 
-                HorizontalAlignment="Left" 
-                Margin="20,120,0,0" 
-                VerticalAlignment="Top" 
-                Width="75"
-                Command="{Binding DnsUpdateCommand, UpdateSourceTrigger=PropertyChanged}"/>
         <TextBox x:Name="MasterId" 
                  HorizontalAlignment="Left" 
                  Height="23" Margin="130,20,0,0"
@@ -38,26 +31,46 @@
                  Height="23" 
                  Margin="130,80,0,0" 
                  TextWrapping="Wrap" 
-                 Text="{Binding UpdateSpan.Value, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" 
+                 Text="{Binding UpdateSpan.Value, UpdateSourceTrigger=PropertyChanged}" 
                  VerticalAlignment="Top" 
                  Width="120"/>
-        <Label x:Name="MasterIdLabel" Content="MydnsマスターID" HorizontalAlignment="Left" Margin="20,19,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="PasswordLabel" Content="Mydnsパスワード" HorizontalAlignment="Left" Margin="20,49,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="UpdateSpanLabel" Content="Mydns更新間隔" HorizontalAlignment="Left" Margin="20,78,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.505,1.44"/>
+        <Label x:Name="MasterIdLabel" 
+               Content="MydnsマスターID" 
+               HorizontalAlignment="Left" 
+               Margin="20,19,0,0" 
+               VerticalAlignment="Top"/>
+        <Label x:Name="PasswordLabel" 
+               Content="Mydnsパスワード" 
+               HorizontalAlignment="Left"
+               Margin="20,49,0,0" 
+               VerticalAlignment="Top"/>
+        <Label x:Name="UpdateSpanLabel" 
+               Content="Mydns更新間隔" 
+               HorizontalAlignment="Left" 
+               Margin="20,78,0,0" 
+               VerticalAlignment="Top"
+               RenderTransformOrigin="0.505,1.44"/>
+        <Button x:Name="PeriodicButton" 
+                Content="即時更新" 
+                HorizontalAlignment="Left" 
+                Margin="20,120,0,0" 
+                VerticalAlignment="Top" 
+                Width="75"
+                Command="{Binding DnsUpdateCommand}"/>
         <Button x:Name="ImmediatelyButton" 
-        	Content="即時更新" 
+        	Content="定期更新" 
         	HorizontalAlignment="Left" 
         	Margin="110,120,0,0" 
         	VerticalAlignment="Top" 
         	Width="75"
-        	Command="{Binding DnsIntervalUpdateCommand, UpdateSourceTrigger=PropertyChanged}"/>
+        	Command="{Binding DnsIntervalUpdateCommand}"/>
         <Button x:Name="CancelButton" 
         	Content="キャンセル" 
         	HorizontalAlignment="Left" 
         	Margin="200,120,0,0" 
         	VerticalAlignment="Top" 
         	Width="75"
-        	Command="{Binding DnsCancelIntervalCommand, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}"/>
+        	Command="{Binding DnsCancelIntervalCommand}"/>
         <ListView x:Name="UpdateProfitListView" 
                   HorizontalAlignment="Left" 
                   Height="100"

@@ -1,6 +1,6 @@
 ﻿namespace MydnsUpdater.Model
 {
-    public class NetworkInfomation
+    public class MyNetworkInfomation
     {
         public string Ip { get; set; }
         public string About { get; set; }

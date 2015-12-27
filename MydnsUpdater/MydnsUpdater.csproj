@@ -117,9 +117,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\DynamicDns.cs" />
-    <Compile Include="Model\MyDnsHttpAccess.cs" />
-    <Compile Include="Model\NetworkInfomation.cs" />
+    <Compile Include="Model\DynamicDnsInfomation.cs" />
+    <Compile Include="Model\MyDns.cs" />
+    <Compile Include="Model\MyNetworkInfomation.cs" />
     <Compile Include="ViewModel\DynamicDnsViewModel.cs" />
     <Compile Include="ViewModel\MydnsUpdateWindowViewModel.cs" />
     <Compile Include="View\MydnsUpdateWindowView.xaml.cs">

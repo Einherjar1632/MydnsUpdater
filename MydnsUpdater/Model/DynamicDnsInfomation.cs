@@ -2,7 +2,7 @@
 
 namespace MydnsUpdater.Model
 {
-    class DynamicDns : BindableBase
+    class DynamicDnsInfomation : BindableBase
     {
         private string _status;
         public string Status
