@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Reactive.Bindings;
 
 namespace MydnsUpdater.Model
 {
@@ -12,18 +11,10 @@ namespace MydnsUpdater.Model
     {
         private static readonly string _jsonIpUri = "http://jsonip.com/";
         private static readonly string _myDnsUri = " http://www.mydns.jp/directip.html?MID={0}&PWD={1}&IPV4ADDR={2}";
-        private readonly ReactiveProperty<string> masterId;
-        private readonly ReactiveProperty<string> password;
 
         public ObservableCollection<DynamicDnsInfomation> ItemsCollection { get; } = new ObservableCollection<DynamicDnsInfomation>();
 
-        public MyDns(ReactiveProperty<string> masterId, ReactiveProperty<string> password)
-        {
-            this.masterId = masterId;
-            this.password = password;
-        }
-
-        public async Task UpdateDnsServerAsync()
+        public async Task UpdateDnsServerAsync(string masterId , string password)
         {
             using (var httpClient = new HttpClient())
             {
@@ -33,7 +24,7 @@ namespace MydnsUpdater.Model
                     {
                         var json = await response.Content.ReadAsStringAsync();
                         var networkInfomation = JsonConvert.DeserializeObject<MyNetworkInfomation>(json);
-                        var uri = string.Format(_myDnsUri, masterId.Value, password.Value, networkInfomation.Ip);
+                        var uri = string.Format(_myDnsUri, masterId, password, networkInfomation.Ip);
                         using (var responses = await httpClient.GetAsync(uri))
                         {
                             if (responses.IsSuccessStatusCode)

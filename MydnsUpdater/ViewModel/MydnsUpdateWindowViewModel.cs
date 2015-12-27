@@ -93,7 +93,7 @@ namespace MydnsUpdater.ViewModel
             InitializeValidation();
             InitializeCommand();
 
-            Model = new MyDns(MasterId, Password);
+            Model = new MyDns();
 
             ItemsList = Model.ItemsCollection
                 .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
@@ -189,7 +189,7 @@ namespace MydnsUpdater.ViewModel
                 IsDnsIntervalUpdateExecuting.Value = true;
                 using (_countNotifer.Increment())
                 {
-                    await Model.UpdateDnsServerAsync();
+                    await Model.UpdateDnsServerAsync(MasterId.Value, Password.Value);
                 }
 
             });
@@ -213,7 +213,7 @@ namespace MydnsUpdater.ViewModel
         {
             using (_countNotifer.Increment())
             {
-                await Model.UpdateDnsServerAsync();
+                await Model.UpdateDnsServerAsync(MasterId.Value, Password.Value);
             }
         }
     }
