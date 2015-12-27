@@ -12,14 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MydnsUpdater.View
+namespace ReactiveDynamicDnsUpdater.View
 {
     /// <summary>
-    /// MydnsUpdateWindowView.xaml の相互作用ロジック
+    /// ReactiveDynamicDnsUpdaterView.xaml の相互作用ロジック
     /// </summary>
-    public partial class MydnsUpdateWindowView : Window
+    public partial class ReactiveDynamicDnsUpdaterView : Window
     {
-        public MydnsUpdateWindowView()
+        public ReactiveDynamicDnsUpdaterView()
         {
             InitializeComponent();
         }

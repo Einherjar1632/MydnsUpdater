@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Tracing;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using MydnsUpdater.Model;
+using ReactiveDynamicDnsUpdater.Model;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
 
-namespace MydnsUpdater.ViewModel
+namespace ReactiveDynamicDnsUpdater.ViewModel
 {
-    class MydnsUpdateWindowViewModel
+    class ReactiveDynamicDnsUpdaterViewModel
     {
         #region ReactiveProperty
         /// <summary>
@@ -88,7 +88,7 @@ namespace MydnsUpdater.ViewModel
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public MydnsUpdateWindowViewModel()
+        public ReactiveDynamicDnsUpdaterViewModel()
         {
             InitializeValidation();
             InitializeCommand();

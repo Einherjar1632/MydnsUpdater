@@ -1,4 +1,4 @@
-﻿namespace MydnsUpdater.Model
+﻿namespace ReactiveDynamicDnsUpdater.Model
 {
     public class MyNetworkInfomation
     {

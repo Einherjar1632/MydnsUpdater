@@ -1,13 +1,13 @@
-﻿<Window x:Class="MydnsUpdater.View.MydnsUpdateWindowView"
+﻿<Window x:Class="ReactiveDynamicDnsUpdater.View.ReactiveDynamicDnsUpdaterView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:MydnsUpdater.ViewModel"
+        xmlns:vm="clr-namespace:ReactiveDynamicDnsUpdater.ViewModel"
         mc:Ignorable="d"
-        Title="MydnsUpdateWindowView" Height="300" Width="300">
+        Title="ReactiveDynamicDnsUpdaterWindowView" Height="300" Width="300">
     <Window.DataContext>
-        <vm:MydnsUpdateWindowViewModel />
+        <vm:ReactiveDynamicDnsUpdaterViewModel />
     </Window.DataContext>
     <Grid>
         <TextBox x:Name="MasterId" 

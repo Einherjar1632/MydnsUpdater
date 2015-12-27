@@ -7,8 +7,8 @@
     <ProjectGuid>{F4FD0201-F0DD-44D8-B1F9-A10A60EC32C8}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MydnsUpdater</RootNamespace>
-    <AssemblyName>MydnsUpdater</AssemblyName>
+    <RootNamespace>ReactiveDynamicDnsUpdater</RootNamespace>
+    <AssemblyName>ReactiveDynamicDnsUpdater</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -121,15 +121,15 @@
     <Compile Include="Model\MyDns.cs" />
     <Compile Include="Model\MyNetworkInfomation.cs" />
     <Compile Include="ViewModel\DynamicDnsViewModel.cs" />
-    <Compile Include="ViewModel\MydnsUpdateWindowViewModel.cs" />
-    <Compile Include="View\MydnsUpdateWindowView.xaml.cs">
-      <DependentUpon>MydnsUpdateWindowView.xaml</DependentUpon>
+    <Compile Include="ViewModel\ReactiveDynamicDnsUpdaterViewModel.cs" />
+    <Compile Include="View\ReactiveDynamicDnsUpdaterView.xaml.cs">
+      <DependentUpon>ReactiveDynamicDnsUpdaterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="View\MydnsUpdateWindowView.xaml">
+    <Page Include="View\ReactiveDynamicDnsUpdaterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

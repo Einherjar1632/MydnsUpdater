@@ -1,7 +1,7 @@
-﻿<Application x:Class="MydnsUpdater.App"
+﻿<Application x:Class="ReactiveDynamicDnsUpdater.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MydnsUpdater"
+             xmlns:local="clr-namespace:ReactiveDynamicDnsUpdater"
              Startup="EntryPoint">
     <Application.Resources>
          

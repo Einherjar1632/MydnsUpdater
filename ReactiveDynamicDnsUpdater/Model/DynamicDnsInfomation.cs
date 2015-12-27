@@ -1,6 +1,6 @@
 ﻿using Microsoft.Practices.Prism.Mvvm;
 
-namespace MydnsUpdater.Model
+namespace ReactiveDynamicDnsUpdater.Model
 {
     class DynamicDnsInfomation : BindableBase
     {
