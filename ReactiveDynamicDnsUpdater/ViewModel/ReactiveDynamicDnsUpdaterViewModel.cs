@@ -95,7 +95,7 @@ namespace ReactiveDynamicDnsUpdater.ViewModel
 
             Model = new MyDns();
 
-            ItemsList = Model.ItemsCollection
+            ItemsList = Model.ItemsList
                 .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
 
             // 購読開始(未作成)

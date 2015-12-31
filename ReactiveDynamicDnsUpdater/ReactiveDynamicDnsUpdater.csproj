@@ -119,7 +119,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\DynamicDnsInfomation.cs" />
     <Compile Include="Model\MyDns.cs" />
-    <Compile Include="Model\MyNetworkInfomation.cs" />
+    <Compile Include="Model\JsonIp.cs" />
     <Compile Include="ViewModel\DynamicDnsViewModel.cs" />
     <Compile Include="ViewModel\ReactiveDynamicDnsUpdaterViewModel.cs" />
     <Compile Include="View\ReactiveDynamicDnsUpdaterView.xaml.cs">
