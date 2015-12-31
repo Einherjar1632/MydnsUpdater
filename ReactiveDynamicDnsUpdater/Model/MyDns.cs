@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -23,6 +22,7 @@ namespace ReactiveDynamicDnsUpdater.Model
         /// <summary>
         /// MyDnsへの更新結果を保持するコレクション(ソート前)
         /// </summary>
+        /// <remarks>WPF以外だとView側でソート出来ないのでModel側でソート</remarks>
         private readonly IList<DynamicDnsInfomation> _itemsList = new List<DynamicDnsInfomation>();
 
         /// <summary>
@@ -33,8 +33,8 @@ namespace ReactiveDynamicDnsUpdater.Model
         /// <summary>
         /// MyDNSへのIPアドレス更新を行います
         /// </summary>
-        /// <param name="masterId"></param>
-        /// <param name="password"></param>
+        /// <param name="masterId">MyDNSのマスターID</param>
+        /// <param name="password">MyDNSのパスワード</param>
         /// <returns></returns>
         public async Task UpdateDnsServerAsync(string masterId , string password)
         {
@@ -47,6 +47,7 @@ namespace ReactiveDynamicDnsUpdater.Model
                         var json = await response.Content.ReadAsStringAsync();
                         var networkInfomation = JsonConvert.DeserializeObject<JsonIp>(json);
                         var uri = string.Format(MyDnsUri, masterId, password, networkInfomation.Ip);
+                        // MyDNSへの更新処理
                         using (var responses = await httpClient.GetAsync(uri))
                         {
                             if (responses.IsSuccessStatusCode)
@@ -58,13 +59,13 @@ namespace ReactiveDynamicDnsUpdater.Model
                             {
                                 _itemsList.Add(new DynamicDnsInfomation { Status = "更新失敗", Time = DateTime.Now.ToString(CultureInfo.CurrentCulture) });
                             }
-                            var dynamicDnsInfomations = _itemsList.OrderByDescending(x => x.Time);
-
-                            ItemsList?.Clear();
-                            foreach (var value in dynamicDnsInfomations)
-                            {
-                                ItemsList?.Add(value);
-                            }
+                        }
+                        //更新順にソートする
+                        var dynamicDnsInfomations = _itemsList.OrderByDescending(x => x.Time);
+                        ItemsList?.Clear();
+                        foreach (var value in dynamicDnsInfomations)
+                        {
+                            ItemsList?.Add(value);
                         }
                     }
                 }

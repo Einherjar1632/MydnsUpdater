@@ -1,90 +1,82 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Tracing;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using ReactiveDynamicDnsUpdater.Model;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
+using ReactiveDynamicDnsUpdater.Model;
 
 namespace ReactiveDynamicDnsUpdater.ViewModel
 {
+    /// <summary>
+    /// メインウインドウのViewModel
+    /// </summary>
     class ReactiveDynamicDnsUpdaterViewModel
     {
-        #region ReactiveProperty
         /// <summary>
         /// MydnsのマスターID
         /// </summary>
         public ReactiveProperty<string> MasterId { get; private set; }
-
         /// <summary>
         /// Mydnsのパスワード
         /// </summary>
         public ReactiveProperty<string> Password { get; private set; }
-
         /// <summary>
         /// Mydnsへの更新間隔
         /// </summary>
         [Required(ErrorMessage = @"必須入力です")]
         [RegularExpression(@"[0-9]+", ErrorMessage = @"半角数字のみ入力できます")]
         public ReactiveProperty<string> UpdateSpan { get; private set; }
-        #endregion
-
-        #region ReactiveCommand
         /// <summary>
         /// DNS更新のコマンド
         /// </summary>
         public ReactiveCommand DnsUpdateCommand { get; private set; }
-
         /// <summary>
-        /// DNSを一定間隔で更新するコマンド
+        /// DNSを一定間隔で更新するインターバルコマンド
         /// </summary>
         public ReactiveCommand DnsIntervalUpdateCommand { get; private set; }
-
         /// <summary>
         /// DNSの一定間隔更新をキャンセルするコマンド
         /// </summary>
         public ReactiveCommand DnsCancelIntervalCommand { get; private set; }
-        #endregion
-
-        #region ReadOnlyReactiveCollection
         /// <summary>
-        /// DynamicDNSへの更新結果履歴を保持する読み取り専用コレクション
+        /// DynamicDNSへの更新結果を保持する読み取り専用コレクション
         /// </summary>
         public ReadOnlyReactiveCollection<DynamicDnsViewModel> ItemsList { get; set; }
-        #endregion
+        /// <summary>
+        /// インターバルコマンドが実行中かどうかを判断するフラグ
+        /// </summary>
+        private ReactiveProperty<bool> IsDnsIntervalUpdateExecuting { get; set; } = new ReactiveProperty<bool>(false);
 
-        #region AthorMember
         /// <summary>
         /// コマンド実行中かどうかを判定するIObservableなカウンター
         ///   カウンターが0より大きければ実行中
         ///   カウンターが0であれば停止中
+        ///   IDisposableを実装しているためDecrementは使用せずUsingを推奨
         /// </summary>
         private readonly CountNotifier _countNotifer = new CountNotifier(1);
-
         /// <summary>
-        /// 更新系コマンドが実行中であることを表すプロパティ
+        /// コマンド実行中かどうかを判定するIObservableなプロパティ
+        ///   ReactiveCommandのCanExecuteはIObservable＜bool＞を監視するため
+        ///   CountNotifierをこのプロパティに変換する
         /// </summary>
         private IObservable<bool> IsExecuting { get; set; }
-
         /// <summary>
-        /// 実行タイマー
+        /// 一定間隔更新用のタイマー
         /// </summary>
-        private IObservable<long>  Timer { get; set; }
-
-        private IDisposable TimerCancel { get; set; }
-
-        private ReactiveProperty<bool> IsDnsIntervalUpdateExecuting { get; set; }  = new ReactiveProperty<bool>(false);
+        private IObservable<long> Timer { get; set; }
+        /// <summary>
+        /// タイマーの生存期間を管理する
+        /// </summary>
+        private IDisposable TimerAvailable { get; set; }
 
         /// <summary>
         /// Modelの情報を保持
         /// </summary>
-        private MyDns Model { get; }
-        #endregion
+        private MyDns Model { get; set; }
 
-        #region constructor
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -92,29 +84,10 @@ namespace ReactiveDynamicDnsUpdater.ViewModel
         {
             InitializeValidation();
             InitializeCommand();
-
-            Model = new MyDns();
-
-            ItemsList = Model.ItemsList
-                .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
-
-            // 購読開始(未作成)
-            DnsUpdateCommand.Subscribe(_ =>
-            {
-                UpdateMydnsServer();
-            });
-            DnsIntervalUpdateCommand.Subscribe( _ =>
-            {
-                IntervalUpdateMydnsServerAsync();
-            });
-            DnsCancelIntervalCommand.Subscribe(_ =>
-            {
-                CancelIntervalAsync();
-            });
+            InitializeCollections();
+            InitializeSubscribes();
         }
-        #endregion
 
-        #region PrivateMethod
         /// <summary>
         /// バインドされているコマンドのバリデーション設定
         /// </summary>
@@ -162,13 +135,6 @@ namespace ReactiveDynamicDnsUpdater.ViewModel
             .CombineLatestValuesAreAllFalse() // 指定したObserveHasErrorsが全て無くなった時に処理できる
             .ToReactiveCommand();
 
-
-            // 更新コマンドが実行可能かどうかを判断するIObservable<bool>を生成
-            //  特に必要なIObservableではないが後学のために用意
-            var canDnsUpdateCommand = DnsUpdateCommand
-                .CanExecuteChangedAsObservable()　// ICommandに実装されているCanExecuteChangedをIObservable<EventArgs>に変換して
-                .Select(_ => DnsUpdateCommand.CanExecute()); // IObservable<bool>に変換
-
             // キャンセルコマンドは更新系コマンド実行中
             // かつ更新コマンドが実行可能な時のみCommandを受け付ける
             DnsCancelIntervalCommand = new[]
@@ -178,13 +144,54 @@ namespace ReactiveDynamicDnsUpdater.ViewModel
             .CombineLatestValuesAreAllTrue()
             .ToReactiveCommand();
         }
-        #endregion
 
+        /// <summary>
+        /// コレクションの初期化
+        /// </summary>
+        private void InitializeCollections()
+        {
+            Model = new MyDns();
+            ItemsList = Model.ItemsList
+                .ToReadOnlyReactiveCollection(x => new DynamicDnsViewModel(x));
+        }
 
+        /// <summary>
+        /// 購読者を設定
+        /// </summary>
+        private void InitializeSubscribes()
+        {
+            DnsUpdateCommand.Subscribe(_ =>
+            {
+                UpdateMydnsServer();
+            });
+            DnsIntervalUpdateCommand.Subscribe(_ =>
+            {
+                IntervalUpdateMydnsServerAsync();
+            });
+            DnsCancelIntervalCommand.Subscribe(_ =>
+            {
+                CancelIntervalAsync();
+            });
+        }
+
+        /// <summary>
+        /// 即時実行します
+        /// </summary>
+        private async void UpdateMydnsServer()
+        {
+            using (_countNotifer.Increment())
+            {
+                await Model.UpdateDnsServerAsync(MasterId.Value, Password.Value);
+            }
+        }
+
+        /// <summary>
+        /// 定期的に実行します
+        /// </summary>
         private  void IntervalUpdateMydnsServerAsync()
         {
             Timer = Observable.Timer(TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(long.Parse(UpdateSpan.Value)));
-            TimerCancel = Timer.Subscribe(async _ =>
+            TimerAvailable = Timer.Subscribe(async _ =>
             {
                 IsDnsIntervalUpdateExecuting.Value = true;
                 using (_countNotifer.Increment())
@@ -201,20 +208,8 @@ namespace ReactiveDynamicDnsUpdater.ViewModel
         private void CancelIntervalAsync()
         {
             IsDnsIntervalUpdateExecuting.Value = false;
-            TimerCancel.Dispose();
+            TimerAvailable.Dispose();
             _countNotifer.Decrement();
-        }
-
-
-        /// <summary>
-        /// 即時実行します
-        /// </summary>
-        private async void UpdateMydnsServer()
-        {
-            using (_countNotifer.Increment())
-            {
-                await Model.UpdateDnsServerAsync(MasterId.Value, Password.Value);
-            }
         }
     }
 }
