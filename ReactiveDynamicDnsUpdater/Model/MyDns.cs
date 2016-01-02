@@ -53,7 +53,7 @@ namespace ReactiveDynamicDnsUpdater.Model
                             if (responses.IsSuccessStatusCode)
                             {
                                 await responses.Content.ReadAsStringAsync();
-                                _itemsList.Add(new DynamicDnsInfomation { Status = "更新成功", Time = DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss") });
+                                _itemsList.Add(new DynamicDnsInfomation { Status = "更新成功", Time = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") });
                             }
                             else
                             {
