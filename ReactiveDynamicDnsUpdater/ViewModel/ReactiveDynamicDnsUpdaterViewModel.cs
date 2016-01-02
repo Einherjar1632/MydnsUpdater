@@ -5,7 +5,6 @@ using ReactiveDynamicDnsUpdater.Model;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 using Reactive.Bindings.Notifiers;
-using ReactiveDynamicDnsUpdater.Model;
 
 namespace ReactiveDynamicDnsUpdater.ViewModel
 {
